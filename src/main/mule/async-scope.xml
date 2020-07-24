@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+
+	<flow name="async-scope"
+		doc:id="2456daae-fdf7-4425-8283-8799f22a896d">
+		<http:listener doc:name="HTTPS Listener"
+			doc:id="f6ddc1f7-0b71-435b-a8c7-0dc46e9965a2"
+			config-ref="HTTP_Listener_config" path="/flights/async" />
+		<http:request method="GET" doc:name="HTTPS Request"
+			doc:id="02c4ce00-59cd-4874-9bd7-ba547b513689"
+			config-ref="HTTP_Request_configuration" path="/api/flights" />
+		<logger level="INFO" doc:name="Request Payload"
+			doc:id="949c768a-4c6e-4717-b08d-a0a196a022b4" message="#[payload]" />
+		<async doc:name="Async" doc:id="c6a9576f-b75d-4fcc-807b-d33a2a1d2f9c" >
+			<http:request method="GET" doc:name="Async Flight Resposne" doc:id="3142928b-20d7-418f-bd02-cd34e113f96f" config-ref="HTTP_Request_configuration" path="/api/flights" />
+			<file:write doc:name="Write Json payload to file" doc:id="038d62c1-1f0b-4ce6-a4f3-f33f07fccb09" path="/Users/harishvadlamudi/Desktop/files/async-file.json"/>
+			<jms:publish doc:name="Publish Async Reseponse To Active MQ" doc:id="ed16a2bf-be2a-47bb-a6ca-68b258d00de5" config-ref="JMS_Config" destination="flights-async"/>
+			<set-variable value='#[payload]' doc:name="async set variable" doc:id="e67f3a4a-377b-47ea-865b-32376b6d4b91" variableName="async"/>
+			<logger level="INFO" doc:name="Async Payload" doc:id="05f40e1b-560a-42d1-86e0-9c06b91de063" message="#[payload]"/>
+		</async>
+		<ee:transform doc:name="Final Payload"
+			doc:id="32fe7a6d-f98f-4ceb-b51c-db0af32fcce2">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+	asyncPayload: vars.'async',
+	flightsPayload: payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

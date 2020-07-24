@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	
+	<!-- HTTPS Listener Configuration -->
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="226b26b9-bf85-4389-9315-aefd72440ab3">
+		<http:listener-connection host="0.0.0.0"
+			port="8081" />
+	</http:listener-config>
+	
+	<!-- HTTPS Request Configuration -->
+	<http:request-config
+		name="HTTP_Request_configuration"
+		doc:name="HTTP Request configuration"
+		doc:id="f53bf71c-e553-4587-939f-cb9e95e1852e">
+		<http:request-connection
+			host="training4-american-ws.cloudhub.io" port="80" />
+	</http:request-config>
+	
+	<!-- JMS Configuration -->
+	<jms:config name="JMS_Config" doc:name="JMS Config"
+		doc:id="d2d2cc7b-238c-4e0b-9de0-557f99f514c1">
+		<jms:active-mq-connection username="admin"
+			password="admin">
+			<jms:factory-configuration
+				brokerUrl="tcp://localhost:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+
+
+</mule>
